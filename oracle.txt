@@ -1,0 +1,124 @@
+----1变量，常量设置和分支语句
+ set timing on ;
+ SET SERVEROUTPUT ON ;
+ ---声明变量
+ DECLARE param1 scott.emp.ename%TYPE;
+ ----设置常量
+ con1 constant number:=3;
+ BEGIN
+     SELECT ename INTO param1 FROM scott.emp  WHERE ROWNUM=1;
+    dbms_output.put_line(param1||'-'||con1);
+    IF  con1<0  THEN 
+      dbms_output.put_line('常量值小于0');
+    ELSIF conl=0 THEN 
+      dbms_output.put_line('常量值等于0');
+    ELSE
+      dbms_output.put_line('常量值大于0');
+    end if;
+ END;
+ /
+ 
+ 
+ ---case_then
+ 
+ SET SERVEROUTPUT ON ;
+declare 
+ ----设置常量
+ con_p CONSTANT NUMBER:=3;
+ con_t CONSTANT NUMBER:=1;
+ res NUMBER;
+ resp number;
+ BEGIN
+     CASE  WHEN con_p =1  THEN  res:= 100;
+          WHEN con_p <1  THEN  res:= 200;
+          WHEN con_p >1  THEN  res:= 300;
+    
+     END case ;
+    dbms_output.put_line(res);
+    CASE   con_t  WHEN 1  THEN  resp:= 100;
+          WHEN    2  THEN  resp:= 200;
+          WHEN  3  THEN  resp:= 300;
+    
+     END  CASE ;
+    dbms_output.put_line(resp);
+ END;
+ /
+
+
+
+----游标1
+set serveroutput on ;
+
+declare 
+  CURSOR mycur(p1 NUMBER) IS SELECT empno,ename,JOB,sal FROM scott.emp WHERE sal>=p1;
+  v_no scott.emp.empno%TYPE;
+  v_name scott.emp.ename%type;
+  v_job scott.emp.JOB%TYPE;
+  v_sal scott.emp.sal%type;
+BEGIN
+   IF mycur%isopen=FALSE THEN 
+    OPEN mycur(3500);
+   END IF;
+   FETCH mycur INTO v_no,v_name,v_job,v_sal;
+   LOOP
+         EXIT WHEN mycur%notfound;
+      dbms_output.put_line('编号:'||v_no||',姓名:'||v_name||',职位:'||v_job||',薪水:'||v_sal);
+      
+     FETCH mycur INTO v_no,v_name,v_job,v_sal;
+   END LOOP;
+   CLOSE mycur;
+   END;
+   /
+   ----游标2，游标for 循环
+   set serveroutput on ;
+
+declare 
+  CURSOR mycur(p1 NUMBER) IS SELECT empno,ename,JOB,sal FROM scott.emp WHERE sal>=p1;
+  ---定义记录类型
+  TYPE  user_record  IS RECORD
+    ( v_no scott.emp.empno%TYPE,
+      v_name scott.emp.ename%TYPE,
+      v_job scott.emp.JOB%TYPE,
+      v_sal scott.emp.sal%TYPE);
+  ----声明记录变量
+    var_user_record user_record;
+BEGIN
+   IF mycur%isopen=FALSE THEN 
+    OPEN mycur(6000);
+   END IF;
+   FETCH mycur INTO var_user_record;
+   LOOP
+    FETCH mycur INTO var_user_record;
+         EXIT WHEN mycur%notfound;
+      dbms_output.put_line('编号:'||var_user_record.v_no||',姓名:'||var_user_record.v_name
+       ||',职位:'||var_user_record.v_job||',薪水:'||var_user_record.v_sal);
+      
+     
+   END LOOP;
+   CLOSE mycur;
+   END;
+   /
+  ----游标3，典型游标for 循环
+set serveroutput on ;
+DECLARE 
+     CURSOR mycur(p1 NUMBER) IS SELECT empno,ename,JOB,sal FROM scott.emp WHERE sal>=p1;
+BEGIN
+   for  var_user_record in mycur(5000) loop 
+      dbms_output.put_line('编号:'||var_user_record.empno||',姓名:'||var_user_record.ename
+       ||',职位:'||var_user_record.job||',薪水:'||var_user_record.sal);
+   END LOOP;
+   ---简单for 循环
+   FOR K  IN 1 ..100 LOOP
+    dbms_output.put_line(K);
+    end loop;
+   END;
+   /
+  ----游标4，典型游标for 循环 ,不再声明游标，写在sql语句里
+SET SERVEROUTPUT ON ;
+BEGIN
+   for  var_user_record in (SELECT empno,ename,JOB,sal FROM scott.emp WHERE sal>=5000) loop 
+      dbms_output.put_line('编号:'||var_user_record.empno||',姓名:'||var_user_record.ename
+       ||',职位:'||var_user_record.job||',薪水:'||var_user_record.sal);
+   END LOOP;
+   END;
+   /
